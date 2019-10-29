@@ -35,22 +35,47 @@ def place_cross(x, y, cross_w, cross_l):
     xs.put(0)
     return
 
+def place_blks(block_name, block_height, block_angles, block_width, block_positions):
+    try: block_positions.shape[1]
+    except IndexError:
+        block_positions = num.array([block_positions,
+                                       num.zeros(shape=block_positions.shape)])
+    with nd.Cell(block_name) as blk_arr:
+        for w in num.arange(block_angles.size):
+            block_pts = geom.parallelogram(length=block_width[w],
+                                           height=block_height,
+                                           angle=block_angles[w],
+                                           shift=(block_positions[0,w],
+                                                  block_positions[1,0], 0))
+            nd.Polygon(points=block_pts, layer='layer3').put(0)
+    blk_arr.put(0)
+    message = 'Angle = '+num.array2string(blk_angles[0])+\
+              ' to '+num.array2string(block_angles[-1])+\
+    ', width = ' + num.array2string(block_width[0]*num.sin(num.pi/180*block_angles[0]))
+    nd.text(text=message, height=20, layer=3).put(2*block_positions[0,-1] -
+                                                    block_positions[0,-2],
+                                                    block_positions[1,-1])
 
 if __name__ == "__main__":
-
-    place_cross(0, 0, 5, 40)
 
     blk_height = 20
     blk_angles = 10 * (2.0 + num.arange(7))
     blk_width = 5.0 * num.ones(blk_angles.size) / num.sin(num.pi / 180 * blk_angles)
-    blk_positions = 80.0 * (1 + num.arange(blk_angles.size))
-    with nd.Cell(name='blocks') as blks:
-        for w in num.arange(blk_angles.size):
-            blk_pts = geom.parallelogram(length=blk_width[w], height=blk_height,
-                                         angle=blk_angles[w],
-                                         shift=(blk_positions[w], 0, 0))
-            print(blk_pts)
-            nd.Polygon(points=blk_pts, layer='layer3').put(0)
-    blks.put(0)
+    blk_x_positions = 80.0 * (1 + num.arange(blk_angles.size)) # x-positions
+    blk_y_positions = 40.0 * num.arange(5) - 20
+    blk_name = num.array2string(1+num.arange(blk_y_positions.size))
+    place_cross(0, 0, 3, 60) # x, y, cross_width, cross_length
+    place_cross(0, 80, 5, 60)
+    place_cross(0, 160, 10, 60)
+    nd.text(text='Height = 60, Width = 3',height=20,layer='layer3').put(-300,0)
+    nd.text(text='Height = 60, Width = 5',height=20,layer='layer3').put(-300,80)
+    nd.text(text='Height = 60, Width = 10',height=20,layer='layer3').put(-300,160)
+
+    for i in range(5):
+        place_blks(blk_name[i], blk_height, blk_angles, blk_width
+                   +2.0*i*num.ones(blk_angles.size) / num.sin(num.pi / 180 * blk_angles),
+                   num.array([blk_x_positions,
+                              blk_y_positions[i]
+                              * num.ones(shape=blk_x_positions.shape)]))
 
     nd.export_gds(filename='ms_test_struct_v2')
