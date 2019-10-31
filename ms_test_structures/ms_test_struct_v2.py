@@ -23,27 +23,27 @@ def place_cross(cross_name, x, y, cross_w, cross_l):
                                  [cross_w[u], 0, 0, cross_w[u]]])
             xs_box_h = geom.transform(points=num.transpose(box_pts),
                                       move=(+x, y + (cross_l - cross_w[u]) / 2
-                                            + 2 * u * cross_l, 0))
+                                            + u * (cross_l + 50), 0))
             xs_box_v = geom.transform(points=num.transpose(
                 num.dot(rotation_mat(90), box_pts)),
                 move=(+x + (cross_l + cross_w[u]) / 2,
-                      +y + 2 * u * cross_l, 0))
+                      +y + u * (cross_l + 50), 0))
             xs_box_30 = geom.transform(points=num.transpose(
                 num.dot(rotation_mat(30), box_pts)),
                 move=(+x + (cross_l - cross_l * num.cos(num.pi / 6)
                             + cross_w[u] * num.sin(num.pi / 6)) / 2,
                       +y + (cross_l - cross_l * num.sin(num.pi / 6)
                             - cross_w[u] * num.cos(num.pi / 6)) / 2
-                      + 2 * u * cross_l, 0))
+                      + u * (cross_l + 50), 0))
             xs_box_60 = geom.transform(points=num.transpose(
                 num.dot(rotation_mat(60), box_pts)),
                 move=(+x + (cross_l - cross_l * num.cos(num.pi / 3)
                             + cross_w[u] * num.sin(num.pi / 3)) / 2,
                       + y + (cross_l - cross_l * num.sin(num.pi / 3)
                              - cross_w[u] * num.cos(num.pi / 3)) / 2
-                      + 2 * u * cross_l, 0))
+                      + u * (cross_l + 50), 0))
             xs_box_120 = geom.transform(xs_box_60, flipy=True,
-                                        move=(0, +2 * y + cross_l + 4 * u * cross_l, 0))
+                                        move=(0, +2 * y + cross_l + 2*u*(cross_l + 50), 0))
             xs_box_150 = geom.transform(xs_box_30, flipx=True,
                                         move=(+2 * x + cross_l, 0, 0))
             nd.Polygon(points=xs_box_h, layer='layer3').put(0)
@@ -54,7 +54,7 @@ def place_cross(cross_name, x, y, cross_w, cross_l):
             nd.Polygon(points=xs_box_150, layer='layer3').put(0)
             message_txt = 'Height = ' + str(cross_l) + ', Width = ' + str(cross_w[u])
             nd.text(text=message_txt, height=20, layer='layer3') \
-                .put(int(x - cross_l / 2 - 240), int(y + 2 * u * cross_l))
+                .put(int(x - cross_l / 2 - 150), int(y + u * (cross_l + 50)))
     xs.put(0)
     return
 
@@ -108,15 +108,15 @@ def place_rects(rect_name, rect_length, rect_width, rect_angles, rect_x_coords,
                 message += rect_width
             else:
                 message += num.array2string(rect_width[u])
-            nd.text(text=message, height=20, layer='layer3') \
-                .put(int(rect_x_coords[-1] + 0.5 * rect_x_coords[0]),
-                     int(rect_y_coords[u]))
+            nd.text(text=message, height=20, layer='layer3', align='rb') \
+                .put(int(rect_x_coords[-2]  + 250 ),
+                     int(rect_y_coords[u]) + 100)
     rect_array.put(0)
     return rect_array
 
 
 if __name__ == "__main__":
-    cross_structs = place_cross('cross', 0, 0, num.array([3.0, 5.0, 10.0]), 60)
+    cross_structs = place_cross('cross', -100, 0, num.array([3.0, 5.0, 10.0]), 200)
 
     rect_w = num.array([3, 5, 8, 10])
     rect_l = 200
@@ -131,13 +131,13 @@ if __name__ == "__main__":
             'ms_test_structures\\resolution_test.gds'
         res_test_bb = nd.load_gds(filename=filename_res, layermap={1: 3}, prefix='res_',
                                   newcellname='res_test')
-    res_test_bb = res_test_bb.put(-352, 500)
+    res_test_bb = res_test_bb.put(-325, 750)
 
-    with nd.Cell(name='critical_dims') as crit_dims_bb:
+    with nd.Cell(name='critical_dimsg') as crit_dims_bb:
         filename_crit = \
             'c:\\users\\micha\\documents\code\\nazca-mask-design' + \
             '\\ms_test_structures\\critical_dimension.gds'
         crit_dims_bb = nd.load_gds(filename=filename_crit, layermap={1: 3},
                                    newcellname='crit_dim_cell', prefix='dims_')
-    dims_bb = crit_dims_bb.put((-200, 225, 0))
+    dims_bb = crit_dims_bb.put((-325, 450, 0))
     nd.export_gds(filename='ms_test_struct_v2')
